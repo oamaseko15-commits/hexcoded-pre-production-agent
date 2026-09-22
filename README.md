@@ -72,29 +72,36 @@ Open http://localhost:3000
 ```
 app/
   page.tsx                 # Client UI — brief input, pipeline status, results
-  api/generate/route.ts    # NDJSON stream: step events → final result
+  api/agents/route.ts      # Single-agent POST endpoint (one LLM call per request)
   layout.tsx               # Hexcoded brand fonts (Outfit / Inter / JetBrains Mono)
 components/
   WorkflowGraph.tsx        # React Flow canvas (client-only)
   WorkflowGraphLazy.tsx    # dynamic() wrapper, ssr: false
 lib/
-  agents.ts                # 4 sequential generateObject agents
-  pipeline.ts              # Client NDJSON stream consumer
+  agents.ts                # 4 generateObject agent functions
+  pipeline.ts              # Client sequential orchestration (4 fetches)
   schemas.ts               # Zod schemas + agent metadata
   ai.ts                    # Groq provider factory
   examples.ts              # Sample briefs
 ```
 
-### Streaming protocol
+### Agent protocol
 
-`POST /api/generate` emits NDJSON:
+`POST /api/agents` runs **one** agent per request (Zod discriminated union on `agent`). The client (`lib/pipeline.ts`) chains the four calls sequentially and reports status after each step:
 
 ```json
-{"type":"step","agent":"brief-parser","status":"running"}
-{"type":"step","agent":"brief-parser","status":"done"}
-...
-{"type":"result","ok":true,"brief":"...","breakdown":{},"shots":{},"assets":{},"workflow":{}}
+// Request
+{"agent":"brief-parser","brief":"..."}
+// → later steps include prior outputs:
+{"agent":"shot-generator","brief":"...","breakdown":{...}}
+
+// Response
+{"ok":true,"agent":"brief-parser","breakdown":{...}}
+// or
+{"error":"..."}   // 400 invalid body · 502 generation failure
 ```
+
+Each call is a single LLM invocation, keeping well under Netlify's ~10s function timeout (a combined 4-call route previously died mid-pipeline).
 
 ## Design notes
 

@@ -1,23 +1,48 @@
 @import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
 
 :root {
-  --background: #09090b;
-  --foreground: #f4f4f5;
+  --background: #0b0b0f;
+  --foreground: #fafafa;
+  --brand: #22c55e;
+  --brand-deep: #16a34a;
+  --brand-light: #86efac;
+  --brand-wash: #dcfce7;
+  --ink-700: #3b3b42;
+  --ink-500: #86868b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-light: var(--brand-light);
+  --font-display: var(--font-outfit);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-outfit), system-ui, sans-serif;
+}
+
+.eyebrow {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
 }
 
 ::selection {
-  background: rgba(167, 139, 250, 0.35);
+  background: rgba(34, 197, 94, 0.35);
 }

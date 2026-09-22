@@ -1,0 +1,12 @@
+npm notice run hexcoded-pre-production-agent@0.1.0 dev
+npm notice run next dev
+▲ Next.js 16.3.5 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.0.0.109:3000
+- Environments: .env.local
+✓ Ready in 3.3s
+✓ Running next.config.ts took 332ms
+
+ GET / 200 in 3.5s (next.js: 3.0s, application-code: 516ms)
+ GET / 200 in 136ms (next.js: 20ms, application-code: 116ms)
+ POST /api/generate 200 in 24.3s (next.js: 359ms, application-code: 24.0s)

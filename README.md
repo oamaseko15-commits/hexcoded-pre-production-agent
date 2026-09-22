@@ -33,7 +33,7 @@ User flow:
 |-------|--------|
 | Framework | Next.js 16 (App Router) + TypeScript |
 | Styling | Tailwind CSS 4 |
-| AI | Vercel AI SDK 7 + Groq (`llama-3.3-70b-versatile`) |
+| AI | Vercel AI SDK 7 + Groq (`openai/gpt-oss-120b`) |
 | Validation | Zod |
 | Node canvas | `@xyflow/react` (React Flow) |
 | Deploy | Netlify |

@@ -387,7 +387,7 @@ export default function Home() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-zinc-500 text-xs min-w-[160px]">
-                          {shot.notes ?? "—"}
+                          {shot.notes?.trim() ? shot.notes : "—"}
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap">
                           <button

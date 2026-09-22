@@ -115,7 +115,7 @@ function layoutNodes(workflow: WorkflowBuilder): {
     id: e.id,
     source: e.source,
     target: e.target,
-    label: e.label,
+    label: e.label?.trim() ? e.label : undefined,
     animated: true,
     style: { stroke: "#22C55E", strokeWidth: 1.5 },
     labelStyle: { fill: "#86868B", fontSize: 11 },

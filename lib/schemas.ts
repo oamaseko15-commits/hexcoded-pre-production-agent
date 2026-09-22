@@ -22,7 +22,9 @@ export const shotSchema = z.object({
   type: z
     .enum(["wide", "medium", "close-up", "macro", "aerial", "insert", "title", "other"])
     .describe("Shot size / kind"),
-  notes: z.string().optional().describe("Camera, lighting, or performance notes"),
+  notes: z
+    .string()
+    .describe("Camera, lighting, or performance notes — empty string if none"),
 });
 
 export const shotListSchema = z.object({
@@ -59,7 +61,7 @@ export const workflowEdgeSchema = z.object({
   id: z.string(),
   source: z.string(),
   target: z.string(),
-  label: z.string().optional(),
+  label: z.string().describe("Edge label — empty string if none"),
 });
 
 export const workflowBuilderSchema = z.object({

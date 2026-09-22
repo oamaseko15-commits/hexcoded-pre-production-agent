@@ -1,6 +1,6 @@
 import { createGroq } from "@ai-sdk/groq";
 
-export const GROQ_MODEL = "llama-3.3-70b-versatile";
+export const GROQ_MODEL = "openai/gpt-oss-120b";
 
 export function getGroq() {
   const apiKey = process.env.GROQ_API_KEY;

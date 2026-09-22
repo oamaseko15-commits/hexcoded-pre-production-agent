@@ -28,7 +28,7 @@ export const shotSchema = z.object({
 });
 
 export const shotListSchema = z.object({
-  shots: z.array(shotSchema).min(3).max(12),
+  shots: z.array(shotSchema).min(3).max(24),
   pacingNote: z.string().describe("How the cut should feel across the sequence"),
 });
 

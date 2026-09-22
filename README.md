@@ -36,7 +36,13 @@ User flow:
 | AI | Vercel AI SDK 7 + Groq (`openai/gpt-oss-120b`) |
 | Validation | Zod |
 | Node canvas | `@xyflow/react` (React Flow) |
-| Deploy | Netlify |
+| Deploy | Netlify · Vercel |
+
+## Live
+
+- **Primary:** https://hexcoded-pre-production-agent.netlify.app
+- **Backup:** https://hexcoded-pre-production-agent.vercel.app
+- **Code:** https://github.com/oamaseko15-commits/hexcoded-pre-production-agent
 
 ## Run locally
 

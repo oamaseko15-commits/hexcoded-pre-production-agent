@@ -38,7 +38,7 @@ export async function runShotGenerator(
     temperature: 0.45,
     system: `You are the Shot Generator agent. You turn a project breakdown into a practical shot list for editors and directors.
 Every shot must be filmable or generatable (AI video, stock, or live action).
-Match shot count to duration: ~1 shot per 2-4 seconds for short-form.
+Target roughly 1 shot per 2–4 seconds for short-form; for longer pieces keep coverage tight and purposeful (usually under 20 shots unless the brief demands otherwise).
 Cover an emotional arc: hook, build, payoff.
 Use varied shot types. Include optional camera/performance notes when useful.`,
     prompt: `Brief:\n${brief}\n\nBreakdown:\n${JSON.stringify(breakdown, null, 2)}`,

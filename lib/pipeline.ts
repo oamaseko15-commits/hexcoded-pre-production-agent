@@ -1,4 +1,9 @@
-import type { AssetPlan, BriefParser, ShotList, WorkflowBuilder } from "@/lib/schemas";
+import type {
+  AssetPlan,
+  BriefParser,
+  ShotList,
+  WorkflowBuilder,
+} from "@/lib/schemas";
 
 export type PipelineResult = {
   brief: string;
@@ -10,77 +15,90 @@ export type PipelineResult = {
 
 export type AgentStatus = "idle" | "running" | "done" | "error";
 
+async function callAgent<T>(
+  body: Record<string, unknown>
+): Promise<{ ok: true; data: T } | { ok: false; error: string }> {
+  try {
+    const res = await fetch("/api/agents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = (await res.json()) as T & { error?: string };
+    if (!res.ok || !("ok" in data && data.ok)) {
+      return {
+        ok: false,
+        error:
+          data && typeof data === "object" && "error" in data && data.error
+            ? String(data.error)
+            : "Agent request failed",
+      };
+    }
+    return { ok: true, data };
+  } catch {
+    return { ok: false, error: "Network error talking to agent" };
+  }
+}
+
 export async function runPipeline(
   brief: string,
   onStep: (agent: string, status: AgentStatus, error?: string) => void
 ): Promise<{ ok: true; result: PipelineResult } | { ok: false; error: string }> {
-  const res = await fetch("/api/generate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ brief }),
+  onStep("brief-parser", "running");
+  const briefRes = await callAgent<{ breakdown: BriefParser }>({
+    agent: "brief-parser",
+    brief,
   });
-
-  if (!res.ok && !res.body) {
-    let msg = "Pipeline request failed";
-    try {
-      const data = (await res.json()) as { error?: string };
-      if (data.error) msg = data.error;
-    } catch {
-      /* ignore */
-    }
-    return { ok: false, error: msg };
+  if (!briefRes.ok) {
+    onStep("brief-parser", "error", briefRes.error);
+    return { ok: false, error: briefRes.error };
   }
+  const breakdown = briefRes.data.breakdown;
+  onStep("brief-parser", "done");
 
-  if (!res.body) {
-    return { ok: false, error: "Empty response from pipeline" };
+  onStep("shot-generator", "running");
+  const shotRes = await callAgent<{ shots: ShotList }>({
+    agent: "shot-generator",
+    brief,
+    breakdown,
+  });
+  if (!shotRes.ok) {
+    onStep("shot-generator", "error", shotRes.error);
+    return { ok: false, error: shotRes.error };
   }
+  const shots = shotRes.data.shots;
+  onStep("shot-generator", "done");
 
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  let result: PipelineResult | null = null;
-  let error: string | null = null;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-
-    let newlineIdx: number;
-    while ((newlineIdx = buffer.indexOf("\n")) >= 0) {
-      const raw = buffer.slice(0, newlineIdx).trim();
-      buffer = buffer.slice(newlineIdx + 1);
-      if (!raw) continue;
-
-      try {
-        const event = JSON.parse(raw) as
-          | { type: "step"; agent: string; status: AgentStatus; error?: string }
-          | ({ type: "result" } & (
-              | ({ ok: true } & PipelineResult)
-              | { ok: false; error: string }
-            ));
-
-        if (event.type === "step") {
-          onStep(event.agent, event.status, event.error);
-        } else if (event.type === "result") {
-          if (event.ok) {
-            result = {
-              brief: event.brief,
-              breakdown: event.breakdown,
-              shots: event.shots,
-              assets: event.assets,
-              workflow: event.workflow,
-            };
-          } else {
-            error = event.error;
-          }
-        }
-      } catch {
-        /* skip partial/malformed line */
-      }
-    }
+  onStep("asset-planner", "running");
+  const assetRes = await callAgent<{ assets: AssetPlan }>({
+    agent: "asset-planner",
+    brief,
+    breakdown,
+    shots,
+  });
+  if (!assetRes.ok) {
+    onStep("asset-planner", "error", assetRes.error);
+    return { ok: false, error: assetRes.error };
   }
+  const assets = assetRes.data.assets;
+  onStep("asset-planner", "done");
 
-  if (result) return { ok: true, result };
-  return { ok: false, error: error ?? "Pipeline finished without a result" };
+  onStep("workflow-builder", "running");
+  const wfRes = await callAgent<{ workflow: WorkflowBuilder }>({
+    agent: "workflow-builder",
+    brief,
+    breakdown,
+    shots,
+    assets,
+  });
+  if (!wfRes.ok) {
+    onStep("workflow-builder", "error", wfRes.error);
+    return { ok: false, error: wfRes.error };
+  }
+  onStep("workflow-builder", "done");
+
+  return {
+    ok: true,
+    result: { brief, breakdown, shots, assets, workflow: wfRes.data.workflow },
+  };
 }
